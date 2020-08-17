@@ -6,7 +6,7 @@ import (
 	"github.com/go-ego/gse"
 )
 
-var seg = gse.New("zh,testdata/test_dict3.txt", "alpha")
+var seg = gse.New("zh", "alpha")
 
 func vec(txtA, txtB string) (vecA, vecB []float64) {
 	la := seg.Cut(txtA, true)
@@ -71,6 +71,10 @@ func cosine(vecA, vecB []float64) float64 {
 	}
 
 	return product / (math.Sqrt(squareSumA) * math.Sqrt(squareSumB))
+}
+
+func TfidfLoadDict(files ...string) error {
+	return seg.LoadDict()
 }
 
 func Tfidf(txtA, txtB string) float64 {
