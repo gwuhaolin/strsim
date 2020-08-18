@@ -6,56 +6,20 @@ import (
 	"github.com/go-ego/gse"
 )
 
-var seg = gse.New("zh", "alpha")
+var Segmenter = gse.New("zh", "alpha")
 
-func vec(txtA, txtB string) (vecA, vecB []float64) {
-	la := seg.Cut(txtA, true)
-	la = seg.Trim(la)
-	lb := seg.Cut(txtB, true)
-	lb = seg.Trim(lb)
-
-	ma := map[string]int{}
-	mb := map[string]int{}
-	mAll := map[string]int{}
-
-	getCnt := func(l []string, m map[string]int) {
-		for _, s := range l {
-			if cnt, has := m[s]; has {
-				m[s] = cnt + 1
-			} else {
-				m[s] = 1
-			}
-			if cnt, has := mAll[s]; has {
-				mAll[s] = cnt + 1
-			} else {
-				mAll[s] = 1
-			}
+func str2vec(str string) map[string]int {
+	l := Segmenter.Cut(str, true)
+	l = Segmenter.Trim(l)
+	m := map[string]int{}
+	for _, s := range l {
+		if cnt, has := m[s]; has {
+			m[s] = cnt + 1
+		} else {
+			m[s] = 1
 		}
 	}
-
-	getCnt(la, ma)
-	getCnt(lb, mb)
-
-	for s, cnt := range mAll {
-		f, _ := seg.Find(s)
-		mAll[s] = cnt + f
-	}
-
-	var lAll []string
-	for s := range mAll {
-		lAll = append(lAll, s)
-	}
-	getT := func(m map[string]int) []float64 {
-		ret := make([]float64, len(lAll))
-		for i, s := range lAll {
-			ret[i] = float64(m[s]) / float64(mAll[s])
-		}
-		return ret
-	}
-
-	vecA = getT(ma)
-	vecB = getT(mb)
-	return vecA, vecB
+	return m
 }
 
 func cosine(vecA, vecB []float64) float64 {
@@ -73,11 +37,31 @@ func cosine(vecA, vecB []float64) float64 {
 	return product / (math.Sqrt(squareSumA) * math.Sqrt(squareSumB))
 }
 
-func TfidfLoadDict(files ...string) error {
-	return seg.LoadDict()
-}
-
-func Tfidf(txtA, txtB string) float64 {
-	vecA, vecB := vec(txtA, txtB)
-	return cosine(vecA, vecB)
+func NewTfidfCompare(baseStr string) func(str string) float64 {
+	mb := str2vec(baseStr)
+	sim := func(str string) float64 {
+		m := str2vec(str)
+		ma := map[string]int{}
+		for s, cnt := range mb {
+			ma[s] = cnt
+		}
+		for s, cnt := range m {
+			ma[s] = ma[s] + cnt
+		}
+		var la []string
+		for s := range ma {
+			la = append(la, s)
+		}
+		vec := func(m map[string]int) []float64 {
+			ret := make([]float64, len(la))
+			for i, s := range la {
+				ret[i] = float64(m[s]) / float64(ma[s])
+			}
+			return ret
+		}
+		va := vec(mb)
+		vb := vec(m)
+		return cosine(va, vb)
+	}
+	return sim
 }
