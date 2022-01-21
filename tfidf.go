@@ -6,7 +6,7 @@ import (
 	"github.com/go-ego/gse"
 )
 
-var Segmenter = gse.New("zh", "alpha")
+var Segmenter, _ = gse.New("zh", "alpha")
 
 func str2vec(str string) map[string]int {
 	l := Segmenter.Cut(str, true)

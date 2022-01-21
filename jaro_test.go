@@ -3,6 +3,9 @@ package strsim
 import "testing"
 
 func TestJaroMatterPrefix(t *testing.T) {
+	t.Log(JaroMatterPrefix(`锄头湖`, `黄土下湖`))
+	t.Log(JaroMatterPrefix(`金井水库`, `金泰垂钓`))
+
 	t.Log(JaroMatterPrefix(
 		`KastKing路亚竿套装全套远投枪柄水滴轮超硬碳素杆抛竿海竿钓鱼竿`,
 		`KastKing路亚竿套装全套远投枪柄水滴轮超硬碳素杆抛竿海竿钓鱼竿`))

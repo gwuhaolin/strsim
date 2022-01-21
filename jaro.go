@@ -3,7 +3,6 @@ package strsim
 import (
 	"github.com/xrash/smetrics"
 	"math"
-	"unicode/utf8"
 )
 
 func unOrderArr(arr1, arr2 []string, compare func(str1, str2 string) float64) float64 {
@@ -46,22 +45,25 @@ func JaroMatterPrefix(str1, str2 string) float64 {
 		return j
 	}
 
-	l1, l2 := utf8.RuneCountInString(str1), utf8.RuneCountInString(str2)
-	prefixSize := math.Min(float64(l1), float64(l2))
-	if prefixSize > 3 {
-		prefixSize = prefixSize / 3
+	arr1, arr2 := []rune{}, []rune{}
+	for _, c := range str1 {
+		arr1 = append(arr1, c)
 	}
+	for _, c := range str2 {
+		arr2 = append(arr2, c)
+	}
+	prefixSize := int(math.Min(float64(len(arr1)), float64(len(arr2))))
 
 	var prefixMatch float64
-	for i := 0; i < int(prefixSize); i++ {
-		if str1[i] == str2[i] {
+	for i := 0; i < prefixSize; i++ {
+		if arr1[i] == arr2[i] {
 			prefixMatch++
 		} else {
 			break
 		}
 	}
 
-	return j + prefixMatch/prefixSize*(1.0-j)
+	return j + prefixMatch/float64(prefixSize)*(1.0-j)
 }
 
 // 找出两个无序数组的相似性
